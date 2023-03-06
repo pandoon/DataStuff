@@ -1,0 +1,53 @@
+#Imports
+import math
+import numpy as np
+import h5py
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import imread
+import scipy
+from PIL import Image
+import pandas as pd
+import tensorflow as tf
+import tensorflow.keras.layers as tfl
+from tensorflow.python.framework import ops
+from cnn_utils import *
+from test_utils import summary, comparator
+
+%matplotlib inline
+np.random.seed(1)
+
+	#Train Test Split
+X_train_orig, Y_train_orig, X_test_orig, Y_test_orig, classes = load_happy_dataset()
+
+X_train = X_train_orig/255.
+X_test = X_test_orig/255.
+
+Y_train = Y_train_orig.T
+Y_test = Y_test_orig.T
+
+	#Building the Model
+def happyModel():
+    model = tf.keras.Sequential([
+            tf.keras.Input(shape=(64, 64, 3)),
+            tfl.ZeroPadding2D(padding=3),
+            tfl.Conv2D(filters=32,kernel_size=7,strides=1),
+            tfl.BatchNormalization(axis = 3, momentum = 0.99, epsilon = 0.001),
+            tfl.ReLU(),
+            tfl.MaxPool2D(),
+            tfl.Flatten(),
+            tfl.Dense(1, activation = 'sigmoid')
+        ])
+    
+    return model
+
+	#Compiling and Inspection
+happy_model.compile(optimizer='adam',
+                   loss='binary_crossentropy',
+                   metrics=['accuracy'])
+
+happy_model.summary()
+
+	#Training & Evaluation
+happy_model.fit(X_train, Y_train, epochs=10, batch_size=16)
+
+happy_model.evaluate(X_test, Y_test)
